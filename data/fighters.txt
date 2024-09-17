@@ -1,0 +1,12 @@
+IronMan
+10 5 7 6 8
+Hulk
+15 4 6 12 8
+CaptainAmerica
+7 3 5 6 5
+Joker
+7 6 8 8 10
+DrOctavius
+10 9 10 10 9
+Thanos
+12 11 9 12 9
