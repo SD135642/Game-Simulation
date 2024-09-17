@@ -40,33 +40,27 @@ bash
 Example Input Files
 fighters.txt
 
-txt
-
-IronMan
-10 5 7 6 8
-Hulk
-15 4 6 12 8
+    IronMan
+    10 5 7 6 8
+    Hulk
+    15 4 6 12 8
 
 arena.txt
 
-txt
-
-5 6
-#####
-##..#
-#...#
-#.#.#
-#...#
-#####
+    5 6
+    #####
+    ##..#
+    #...#
+    #.#.#
+    #...#
+    #####
 
 teams.txt
 
-txt
-
-Avengers 1
-Hulk
-Enemies 1
-IronMan
+    Avengers 1
+    Hulk
+    Enemies 1
+    IronMan
 
 Running the Game
 
