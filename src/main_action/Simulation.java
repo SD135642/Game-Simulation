@@ -34,35 +34,6 @@ public class Simulation {
         return fighters;
     }
 
-    public void randomPlacement(Arena arena, List<Fighter> fighters) {
-        int width = arena.getWidth();
-        int height = arena.getHeight();
-        ArrayList<ArrayList> emptyTilesCoordinates = new ArrayList<>();
-        Random generator = new Random();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                Tile tile = arena.getTile(x, y);
-                if (tile.isAccessible()) {
-                    ArrayList<Integer> coordinates = new ArrayList<>();
-                    coordinates.add(x);
-                    coordinates.add(y);
-                    emptyTilesCoordinates.add(coordinates);
-                }
-            }
-        }
-        for (int i = 0; i < fighters.size(); i++) {
-            Fighter fighter = fighters.get(i);
-            ArrayList<Integer> coordinates = new ArrayList<>();
-            int random = generator.nextInt(0, emptyTilesCoordinates.size());
-            coordinates = emptyTilesCoordinates.get(random);
-            int x = coordinates.get(0);
-            int y = coordinates.get(1);
-            fighter.setXCoordinate(x);
-            fighter.setYCoordinate(y);
-            emptyTilesCoordinates.remove(random);
-            arena.getTile(x, y).setFighter(fighter);
-        }
-    }
 
     public boolean canContinue() {
         boolean cont = true;
@@ -90,9 +61,10 @@ public class Simulation {
         return simulationResult;
     }
 
+    //iron man moved but position didn't change (7, 1) --> (8, 1) and (2, 8)
+
     public void runOneCycle(SimulationResult simulationResult) {
         TurnResult turnResult = new TurnResult();
-        randomPlacement(arena, fighters);  //change to non-random
         for (int j = 0; j < fighters.size(); j++) {
             Fighter fighter = fighters.get(j);
             List<Position> path = new ArrayList<>();
@@ -108,7 +80,7 @@ public class Simulation {
                     if (enemyFighter.getTeamName() != fighter.getTeamName()) {
                         fighterResult.setEnemyFighter(enemyFighter); ///!!!
                         Position position1 = new Position(fighter.getXCoordinate(), fighter.getYCoordinate());
-                        Position position2 = new Position(enemyFighter.getXCoordinate(), fighter.getYCoordinate());
+                        Position position2 = new Position(enemyFighter.getXCoordinate(), enemyFighter.getYCoordinate());
                         List<Position> newPath = pathFinder.pathFinder(position1, position2);
                         if (path.isEmpty() || newPath.size() < path.size()) {
                             path = newPath;

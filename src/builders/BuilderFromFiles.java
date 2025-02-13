@@ -11,10 +11,7 @@ import services.Position;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;  //fix later
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class BuilderFromFiles {
     private Arena arena;
@@ -25,6 +22,7 @@ public class BuilderFromFiles {
         arena = buildArena();
         fighters = buildFighters();
         teams = returnTeams();
+        placeFighters();
     }
     public Arena getArena() {
         return arena;
@@ -97,7 +95,7 @@ public class BuilderFromFiles {
     private List<Fighter> buildFighters() throws FileNotFoundException {
         Scanner scanner = new Scanner(new InputStreamReader(new FileInputStream("data/fighters.txt")));
         ArrayList<Fighter> fighters = new ArrayList<>();
-       while (scanner.hasNext()) {
+        while (scanner.hasNext()) {
            String fighterName = scanner.nextLine();
            int maxHp = scanner.nextInt();
            int armor = scanner.nextInt();
@@ -108,8 +106,23 @@ public class BuilderFromFiles {
 
            Fighter fighter = new Fighter(fighterName, maxHp, armor, damage, attack, defense);
            fighters.add(fighter);
-       }
+        }
         scanner.close();
         return fighters;
+    }
+
+    private void placeFighters() throws FileNotFoundException {
+        Scanner scanner = new Scanner(new InputStreamReader(new FileInputStream("data/placement.txt")));
+        while (scanner.hasNext()) {
+            String fighterName = scanner.nextLine();
+            for (int i = 0; i < fighters.size(); i++) {
+                Fighter fighter = fighters.get(i);
+                if (Objects.equals(fighter.getFighterName(), fighterName)) {
+                    fighter.setXCoordinate(scanner.nextInt());
+                    fighter.setYCoordinate(scanner.nextInt());
+                    scanner.nextLine();
+                }
+            }
+        }
     }
 }
