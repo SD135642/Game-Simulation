@@ -83,19 +83,15 @@ public class Fighter {
         return fighter;
     }
 
-    public void fight(Simulation simulation, Position pos1) {
-        Arena arena = simulation.getArena();
-        Tile tile = arena.getTile(pos1.getX(), pos1.getY());
-        Fighter enemyFighter = tile.getFighter().get();
-
-        int enemyHealth = enemyFighter.getCurrentHealth();
-        int realDamage = getDamage() - enemyFighter.getArmor();
+    public void fight(Fighter enemy) {
+        int enemyHealth = enemy.getCurrentHealth();
+        int realDamage = getDamage() - enemy.getArmor();
         if (realDamage > 0) {
             enemyHealth = enemyHealth - realDamage;
         } else if (realDamage < 0) {
             enemyHealth -= 1;
         }
-        enemyFighter.takeDamage(enemyHealth);
+        enemy.takeDamage(enemyHealth);
 
     }
 

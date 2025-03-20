@@ -10,6 +10,15 @@ public class Tile {
     private Optional<Fighter> fighter;
     private final Position position;
 
+    @Override
+    public String toString() {
+        if (accessibility) {
+            return ".";
+        } else {
+            return "#";
+        }
+    }
+
     public void setFighter(Fighter fighter) {
         if (this.fighter.isPresent()) {
             throw new TileNotEmptyException(position.getX(), position.getY());

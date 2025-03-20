@@ -3,25 +3,23 @@ package main_action;
 import models.Arena;
 import models.Fighter;
 import models.Team;
-import models.Tile;
 import services.PathFinder;
 import services.Position;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Simulation {
 
     private List<Team> teams;
     private Arena arena;
     private List<Fighter> fighters;
+    private SimulationResult simulationResult;
+    private TurnResult turnResult;
+    private FighterResult fighterResult;
 
     public Simulation(List<Team> teams, Arena arena, List<Fighter> fighters) {
         this.teams = teams;
         this.arena = arena;
         this.fighters = fighters;
-
     }
 
     public List<Team> getTeams() {
@@ -36,7 +34,6 @@ public class Simulation {
 
 
     public boolean canContinue() {
-        boolean cont = true;
         int aliveTeams = teams.size();
         for (int i = 0; i < teams.size(); i++) {
             if (teams.get(i).allFightersDead()) {
@@ -54,60 +51,81 @@ public class Simulation {
     }
 
     public SimulationResult run() {
-        SimulationResult simulationResult = new SimulationResult(this);
+        simulationResult = new SimulationResult(this);
         while (canContinue()) {
-            runOneCycle(simulationResult);
+            runOneCycle();
         }
         return simulationResult;
     }
 
-    //iron man moved but position didn't change (7, 1) --> (8, 1) and (2, 8)
-
-    public void runOneCycle(SimulationResult simulationResult) {
-        TurnResult turnResult = new TurnResult();
-        for (int j = 0; j < fighters.size(); j++) {
-            Fighter fighter = fighters.get(j);
-            List<Position> path = new ArrayList<>();
-            PathFinder pathFinder = new PathFinder(arena);
-            if (fighter.isAlive()) {
-                FighterResult fighterResult = new FighterResult();
-                fighterResult.setFighter(fighter); ///!!!
-                fighterResult.setHpBefore(fighter.getCurrentHealth()); ///!!!
-                int xCoor = fighter.getXCoordinate();
-                int yCoor = fighter.getYCoordinate();
-                fighterResult.setPrevPosition(new Position(xCoor, yCoor)); ///!!!
-                for (var enemyFighter : fighters) {
-                    if (enemyFighter.getTeamName() != fighter.getTeamName()) {
-                        fighterResult.setEnemyFighter(enemyFighter); ///!!!
-                        Position position1 = new Position(fighter.getXCoordinate(), fighter.getYCoordinate());
-                        Position position2 = new Position(enemyFighter.getXCoordinate(), enemyFighter.getYCoordinate());
-                        List<Position> newPath = pathFinder.pathFinder(position1, position2);
-                        if (path.isEmpty() || newPath.size() < path.size()) {
-                            path = newPath;
-                        }
-                    }
+    public Fighter selectEnemy(Fighter fighter) {
+        Fighter nearestEnemy = null;
+        int minPathLength = Integer.MAX_VALUE;
+        for (var enemyFighter : fighters) {
+            if (enemyFighter.getTeamName() != fighter.getTeamName() && enemyFighter.isAlive()) {
+                var path = buildPath(fighter, enemyFighter);
+                if (path.isEmpty() || path.size() < minPathLength) {
+                    minPathLength = path.size();
+                    nearestEnemy = enemyFighter;
                 }
-                // fighterResult -> fighter
-                // currHp -> hpAfter
-                Tile currTile = arena.getTile(xCoor, yCoor);
-                Position positionNext = path.get(1);
-                int x = positionNext.getX();
-                int y = positionNext.getY();
-                fighterResult.setCurrPosition(new Position(x, y)); ///!!!
-                Tile nextTile = arena.getTile(x, y);
-                nextTile.setFighter(fighter);
-                currTile.removeFighter();
-
-                if (path.size() == 2) {
-                    fighter.fight(this, path.get(1));
-                }
-                turnResult.addFighterResult(fighterResult);
             }
+        }
+        fighterResult.setEnemyFighter(nearestEnemy);
+        return nearestEnemy;
+    }
 
+    public List<Position> buildPath(Fighter fighter, Fighter enemyFighter) {
+        Position pos1 = new Position(fighter.getXCoordinate(), fighter.getYCoordinate());
+        Position pos2 = new Position(enemyFighter.getXCoordinate(), enemyFighter.getYCoordinate());
+        PathFinder pathFinder = new PathFinder(arena);
+        return pathFinder.pathFinder(pos1, pos2);  // return path
+    }
+
+    public void tryMoveToEnemy(Fighter fighter, List<Position> path) {
+        if (path.size() == 2) {
+            return;
         }
-        for (int i = 0; i < turnResult.getNumResults(); i++) {
-            turnResult.getFighterResult(i).setHpAfter(turnResult.getFighterResult(i).getFighter().getCurrentHealth());
+        var position = path.get(1);
+        fighter.setXCoordinate(position.getX());
+        fighter.setYCoordinate(position.getY());
+        fighterResult.setCurrPosition(new Position(fighter.getXCoordinate(), fighter.getYCoordinate()));
+    }
+
+    public void tryAttackEnemy(Fighter fighter, Fighter enemyFighter) {
+
+        if (fighter.getXCoordinate()-1 != enemyFighter.getXCoordinate() && 
+            fighter.getXCoordinate()+1 != enemyFighter.getXCoordinate() &&
+            fighter.getYCoordinate()-1 != enemyFighter.getYCoordinate() &&
+            fighter.getYCoordinate()+1 != enemyFighter.getYCoordinate()) {
+            return;
         }
+        int enemyHealth = enemyFighter.getCurrentHealth();
+        fighter.fight(enemyFighter);
+        fighterResult.setDamage(enemyHealth - enemyFighter.getCurrentHealth());
+        fighterResult.setEnemyHpAfter(enemyFighter.getCurrentHealth());
+    }
+
+    private void fighterTurn(Fighter fighter) {
+        fighterResult = new FighterResult(fighter.getCurrentHealth());
+        fighterResult.setFighter(fighter);
+        fighterResult.setPrevPosition(new Position(fighter.getXCoordinate(), fighter.getYCoordinate()));
+
+        if (fighter.isAlive()) {
+            var enemy = selectEnemy(fighter);
+            var path = buildPath(fighter, enemy);
+            tryMoveToEnemy(fighter, path);
+            tryAttackEnemy(fighter, enemy);
+        } 
+    }
+
+    public void runOneCycle() {
+        turnResult = new TurnResult();
+        for (int j = 0; j < fighters.size(); j++) {
+            fighterTurn(fighters.get(j));
+            turnResult.addFighterResult(fighterResult);
+        }
+        
         simulationResult.addTurnResults(turnResult);
+    
     }
 }

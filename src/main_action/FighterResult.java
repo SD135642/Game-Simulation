@@ -4,18 +4,28 @@ import models.Fighter;
 import services.Position;
 
 public class FighterResult {
-    private int hpBefore;
-    private int hpAfter;
+    private int damage;
+    private int enemyHpAfter;
     private Fighter fighter;
     private Fighter attackTarget;
     private Position from;
     private Position to;
+    private int startHp;
+    
 
-    public void setHpBefore(int val) {
-        hpBefore = val;
+    public FighterResult(int startHp) {
+        this.startHp = startHp;
     }
-    public void setHpAfter(int val) {
-        hpAfter = val;
+
+    public int getStartHp() {
+        return startHp;
+    }
+
+    public void setDamage(int val) {
+        damage = val;
+    }
+    public void setEnemyHpAfter(int val) {
+        enemyHpAfter = val;
     }
     public void setFighter(Fighter fighter) {
         this.fighter = fighter;
@@ -30,11 +40,11 @@ public class FighterResult {
         to = pos;
     }
 
-    public int getHpBefore() {
-        return hpBefore;
+    public int getDamage() {
+        return damage;
     }
-    public int getHpAfter() {
-        return hpAfter;
+    public int getEnemyHpAfter() {
+        return enemyHpAfter;
     }
     public Fighter getFighter() {
         return fighter;
@@ -50,12 +60,14 @@ public class FighterResult {
     }
 
     @Override
-    public String toString() {
+    public String toString() { // add diff lines, don't print extra info if they aren't fighting
         return "Fighter: " + fighter +
-                ", HP before: " + hpBefore +
-                ", HP after: " + hpAfter +
-                ", attack target: " + attackTarget +
-                ", previous position: " + from +
-                ", current position: " + to;
+                ", went from " + from +
+                " to " + to +
+                " to hit " + attackTarget +
+                " and inflict " + damage +
+                " damage. The enemy had " + enemyHpAfter +
+                " after " + fighter + "'s attack";
+                
     }
 }

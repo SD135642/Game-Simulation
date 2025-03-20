@@ -1,8 +1,4 @@
-Avengers 3
-Hulk
+Avengers 1
 IronMan
-CaptainAmerica
-BadGuys 3
-Joker
-DrOctavius
-Thanos
+BadGuys 1
+Hulk
